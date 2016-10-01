@@ -13,7 +13,7 @@
 		<java.version>1.7</java.version>
 
 		<com.fasterxml.jackson.version>2.5.4</com.fasterxml.jackson.version>
-		<org.apache.httpcomponents.version>4.3.6</org.apache.httpcomponents.version>
+		<cz.msebera.android.version>4.3.6.1</cz.msebera.android.version>
 	</properties>
 
 	<dependencies>
@@ -23,14 +23,19 @@
 			<version>${com.fasterxml.jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>${org.apache.httpcomponents.version}</version>
+			<groupId>cz.msebera.android</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${cz.msebera.android.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.asynchttpclient</groupId>
-			<artifactId>async-http-client</artifactId>
-			<version>2.0.5</version>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp-ws</artifactId>
+			<version>3.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

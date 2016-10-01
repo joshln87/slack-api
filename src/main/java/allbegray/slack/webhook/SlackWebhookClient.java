@@ -8,7 +8,7 @@ import allbegray.slack.exception.SlackArgumentException;
 import allbegray.slack.exception.SlackException;
 import allbegray.slack.type.Payload;
 import allbegray.slack.webapi.SlackWebApiConstants;
-import org.apache.http.impl.client.CloseableHttpClient;
+import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,5 +1,7 @@
 package allbegray.slack;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -9,23 +11,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import allbegray.slack.exception.SlackException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
+import cz.msebera.android.httpclient.HttpEntity;
+import cz.msebera.android.httpclient.NameValuePair;
+import cz.msebera.android.httpclient.client.config.RequestConfig;
+import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
+import cz.msebera.android.httpclient.client.methods.HttpPost;
+import cz.msebera.android.httpclient.entity.ContentType;
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
+import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
+import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
+import cz.msebera.android.httpclient.impl.conn.PoolingHttpClientConnectionManager;
+import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
 public abstract class RestUtils {
 
-	private static Log logger = LogFactory.getLog(RestUtils.class);
+	private final static String TAG = "SlackClient";
 
 	public static HttpEntity createUrlEncodedFormEntity(Map<String, String> parameters) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>(parameters.size());
@@ -54,14 +54,14 @@ public abstract class RestUtils {
 	}
 
 	public static String execute(CloseableHttpClient httpClient, String url, HttpEntity httpEntity) {
-		logger.info("url : " + url);
+		Log.i(TAG, "url : " + url);
 
 		try {
 			HttpPost httpPost = new HttpPost(url);
 			httpPost.setEntity(httpEntity);
 			String retStr = httpClient.execute(httpPost, new StringResponseHandler());
 			
-			logger.info("return : " + retStr);
+			Log.i(TAG, "return : " + retStr);
 			
 			return retStr;
 		} catch (IOException e) {

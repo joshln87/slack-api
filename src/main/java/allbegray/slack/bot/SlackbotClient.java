@@ -4,11 +4,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 import allbegray.slack.RestUtils;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-
 import allbegray.slack.exception.SlackArgumentException;
 import allbegray.slack.webapi.SlackWebApiConstants;
+import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 
 public class SlackbotClient {
 

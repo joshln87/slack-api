@@ -47,8 +47,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import allbegray.slack.exception.SlackResponseErrorException;
 import allbegray.slack.webapi.method.usergroups.users.UsergroupsUsersListMethod;
-import org.apache.http.HttpEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
+import cz.msebera.android.httpclient.HttpEntity;
+import cz.msebera.android.httpclient.impl.client.CloseableHttpClient;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
