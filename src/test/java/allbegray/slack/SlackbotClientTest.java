@@ -3,8 +3,10 @@ package allbegray.slack;
 import allbegray.slack.bot.SlackbotClient;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SlackbotClientTest {
 
 	private String slackbotUrl = "https://{yourteam}.slack.com/services/hooks/slackbot?token={token}";

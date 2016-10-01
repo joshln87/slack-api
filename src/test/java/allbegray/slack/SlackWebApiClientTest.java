@@ -8,6 +8,7 @@ import allbegray.slack.webapi.method.chats.ChatPostMessageMethod;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import allbegray.slack.type.Authentication;
@@ -27,6 +28,7 @@ import allbegray.slack.type.User;
 import allbegray.slack.type.UserPresence;
 import allbegray.slack.webapi.SlackWebApiClient;
 
+@Ignore
 public class SlackWebApiClientTest {
 
 	private String token = "your slack web api token";

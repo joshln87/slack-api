@@ -4,11 +4,13 @@ import allbegray.slack.type.Attachment;
 import allbegray.slack.type.Payload;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import allbegray.slack.type.Field;
 import allbegray.slack.webhook.SlackWebhookClient;
 
+@Ignore
 public class SlackWebhookClientTest {
 
 	private String webhookUrl = "https://hooks.slack.com/services/{id_1}/{id_2}/{token}";

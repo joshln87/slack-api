@@ -4,6 +4,7 @@ import allbegray.slack.SlackClientFactory;
 import allbegray.slack.type.Bot;
 import allbegray.slack.webapi.SlackWebApiClient;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.io.File;
 /**
  * Created by allbegray on 2016-06-14.
  */
+@Ignore
 public class BotsTest {
 
     private String token = "your slack web api token";

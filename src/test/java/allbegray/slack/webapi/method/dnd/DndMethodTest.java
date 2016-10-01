@@ -8,6 +8,7 @@ import allbegray.slack.type.EndSnooze;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import allbegray.slack.type.DndInfo;
@@ -15,6 +16,7 @@ import allbegray.slack.type.DndSimpleInfo;
 import allbegray.slack.type.SetSnooze;
 import allbegray.slack.webapi.SlackWebApiClient;
 
+@Ignore
 public class DndMethodTest {
 
 	private String token = "your slack web api token";
