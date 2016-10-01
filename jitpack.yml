@@ -1,4 +1,0 @@
-jdk:
-  - oraclejdk7
-install:
-  - mvn clean install -DskipTests
