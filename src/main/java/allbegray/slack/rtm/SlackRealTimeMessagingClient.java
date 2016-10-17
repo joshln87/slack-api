@@ -173,7 +173,7 @@ public class SlackRealTimeMessagingClient {
 		return true;
 	}
 
-	private long socketId = 1;
+	private long socketId = 0;
 
 	private void ping() {
 		ObjectNode pingMessage = mapper.createObjectNode();
@@ -187,15 +187,17 @@ public class SlackRealTimeMessagingClient {
 
 	private void await() {
 		Thread thread = new Thread(new Runnable() {
+
 			@Override
 			public void run() {
-				while (!stop) {
-					try {
+				try {
+					Thread.sleep(pingMillis);
+					while (!stop) {
 						ping();
 						Thread.sleep(pingMillis);
-					} catch (Exception e) {
-						throw new SlackException(e);
 					}
+				} catch (Exception e) {
+					throw new SlackException(e);
 				}
 			}
 		});
