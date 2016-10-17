@@ -185,7 +185,7 @@ public class SlackRealTimeMessagingClient {
 					e.printStackTrace();
 					if (failureListeners != null && !failureListeners.isEmpty()) {
 						for (FailureListener listener : failureListeners) {
-							listener.onFailure(new SlackException("websocket error", e));
+							listener.onFailure(new SlackException(e));
 						}
 					}
 				}
