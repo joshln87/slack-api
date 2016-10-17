@@ -172,7 +172,6 @@ public class SlackRealTimeMessagingClient {
 				@Override
 				public void onClose(int code, String reason) {
 					stop = true;
-					close();
 					if (closeListeners != null && !closeListeners.isEmpty()) {
 						for (CloseListener listener : closeListeners) {
 							listener.onClose();
@@ -183,7 +182,6 @@ public class SlackRealTimeMessagingClient {
 				@Override
 				public void onFailure(IOException e, Response response) {
 					stop = true;
-					close();
 					e.printStackTrace();
 					if (failureListeners != null && !failureListeners.isEmpty()) {
 						for (FailureListener listener : failureListeners) {
