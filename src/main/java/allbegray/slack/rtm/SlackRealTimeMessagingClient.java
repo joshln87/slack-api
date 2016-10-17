@@ -37,20 +37,39 @@ public class SlackRealTimeMessagingClient {
 	private WebSocket ws;
 	private WebSocketCall wsCall;
 	private Map<String, List<EventListener>> listeners = new HashMap<String, List<EventListener>>();
+	private List<CloseListener> closeListeners = new ArrayList<CloseListener>();
+	private List<FailureListener> failureListeners = new ArrayList<FailureListener>();
 	private boolean stop;
 	private ObjectMapper mapper;
+	private Integer pingMillis;
+
+	public SlackRealTimeMessagingClient(String webSocketUrl) {
+		this(webSocketUrl, null, null, null);
+	}
 
 	public SlackRealTimeMessagingClient(String webSocketUrl, ObjectMapper mapper) {
-		this(webSocketUrl, null, mapper);
+		this(webSocketUrl, null, mapper, null);
+	}
+
+	public SlackRealTimeMessagingClient(String webSocketUrl, Integer pingMillis) {
+		this(webSocketUrl, null, null, pingMillis);
 	}
 
 	public SlackRealTimeMessagingClient(String webSocketUrl, ProxyServerInfo proxyServerInfo, ObjectMapper mapper) {
+		this(webSocketUrl, proxyServerInfo, mapper, null);
+	}
+
+	public SlackRealTimeMessagingClient(String webSocketUrl, ProxyServerInfo proxyServerInfo, ObjectMapper mapper, Integer pingMillis) {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
+		}
+		if (pingMillis == null) {
+			pingMillis = 3 * 1000;
 		}
 		this.webSocketUrl = webSocketUrl;
 		this.proxyServerInfo = proxyServerInfo;
 		this.mapper = mapper;
+		this.pingMillis = pingMillis;
 	}
 	
 	public void addListener(Event event, EventListener listener) {
@@ -64,6 +83,14 @@ public class SlackRealTimeMessagingClient {
 			listeners.put(event, eventListeners);
 		}
 		eventListeners.add(listener);
+	}
+
+	public void addCloseListener(CloseListener listener) {
+		closeListeners.add(listener);
+	}
+
+	public void addFailureListener(FailureListener listener) {
+		failureListeners.add(listener);
 	}
 
 	public void close() {
@@ -132,7 +159,7 @@ public class SlackRealTimeMessagingClient {
 						List<EventListener> eventListeners = listeners.get(type);
 						if (eventListeners != null && !eventListeners.isEmpty()) {
 							for (EventListener listener : eventListeners) {
-								listener.handleMessage(node);
+								listener.onMessage(node);
 							}
 						}
 					}
@@ -146,13 +173,23 @@ public class SlackRealTimeMessagingClient {
 				public void onClose(int code, String reason) {
 					stop = true;
 					close();
+					if (closeListeners != null && !closeListeners.isEmpty()) {
+						for (CloseListener listener : closeListeners) {
+							listener.onClose();
+						}
+					}
 				}
 
 				@Override
 				public void onFailure(IOException e, Response response) {
 					stop = true;
 					close();
-					throw new SlackException("websocket error", e);
+					e.printStackTrace();
+					if (failureListeners != null && !failureListeners.isEmpty()) {
+						for (FailureListener listener : failureListeners) {
+							listener.onFailure(new SlackException("websocket error", e));
+						}
+					}
 				}
 			});
 			client.dispatcher().executorService().shutdown();
@@ -166,7 +203,7 @@ public class SlackRealTimeMessagingClient {
 		return true;
 	}
 
-	private long socketId = 1;
+	private long socketId = 0;
 
 	private void ping() {
 		ObjectNode pingMessage = mapper.createObjectNode();
@@ -186,15 +223,17 @@ public class SlackRealTimeMessagingClient {
 
 	private void await() {
 		Thread thread = new Thread(new Runnable() {
+
 			@Override
 			public void run() {
-				while (!stop) {
-					try {
+				try {
+					Thread.sleep(pingMillis);
+					while (!stop) {
 						ping();
-						Thread.sleep(3 * 1000);
-					} catch (Exception e) {
-						throw new SlackException(e);
+						Thread.sleep(pingMillis);
 					}
+				} catch (Exception e) {
+					throw new SlackException(e);
 				}
 			}
 		});
