@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
@@ -18,24 +17,19 @@ import java.util.concurrent.TimeUnit;
 import allbegray.slack.exception.SlackException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.ws.WebSocket;
-import okhttp3.ws.WebSocketCall;
-import okhttp3.ws.WebSocketListener;
-import okio.Buffer;
-
-import static okhttp3.ws.WebSocket.TEXT;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class SlackRealTimeMessagingClient {
 
-	private final static String TAG = "SlackRtmClient";
+	private static final String TAG = "SlackRtmClient";
+
+	private static OkHttpClient client;
+	private static WebSocket ws;
 
 	private String webSocketUrl;
 	private ProxyServerInfo proxyServerInfo;
-	private WebSocket ws;
-	private WebSocketCall wsCall;
 	private Map<String, List<EventListener>> listeners = new HashMap<String, List<EventListener>>();
 	private List<CloseListener> closeListeners = new ArrayList<CloseListener>();
 	private List<FailureListener> failureListeners = new ArrayList<FailureListener>();
@@ -99,12 +93,10 @@ public class SlackRealTimeMessagingClient {
 		if (ws != null) {
 			try {
 				ws.close(1000, "");
-			} catch (Exception e) {
-				// ignore
+				ws.cancel();
+			} catch (IllegalStateException e) {
+				// websocket already closed
 			}
-		}
-		if (wsCall != null) {
-			wsCall.cancel();
 		}
 		Log.i(TAG, "Slack RTM closed.");
 	}
@@ -117,15 +109,14 @@ public class SlackRealTimeMessagingClient {
 					.writeTimeout(0, TimeUnit.MILLISECONDS);
 
 			if (proxyServerInfo != null) {
-				Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(
-						proxyServerInfo.getHost(), proxyServerInfo.getPort()));
+				Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyServerInfo.getHost(), proxyServerInfo.getPort()));
 				clientBuilder.proxy(proxy);
 			}
 
-			final Request request = new Request.Builder().url(webSocketUrl).build();
-			final OkHttpClient client = clientBuilder.build();
-			wsCall = WebSocketCall.create(client, request);
-			wsCall.enqueue(new WebSocketListener() {
+			Request request = new Request.Builder().url(webSocketUrl).build();
+			client = clientBuilder.build();
+			client.newWebSocket(request, new WebSocketListener() {
+
 				@Override
 				public void onOpen(WebSocket webSocket, Response response) {
 					ws = webSocket;
@@ -133,26 +124,21 @@ public class SlackRealTimeMessagingClient {
 				}
 
 				@Override
-				public void onMessage(ResponseBody responseBody) throws IOException {
-					String message = null;
-					if (responseBody.contentType() == TEXT) {
-						message = responseBody.string();
-					} else {
-						throw new SlackException("Unknown payload type : " + responseBody.contentType(), new IllegalStateException());
-					}
-					responseBody.source().close();
+				public void onMessage(WebSocket webSocket, String text) {
+					if (text == null)
+						return;
 
 					String type = null;
 					JsonNode node = null;
 					try {
-						node = mapper.readTree(message);
+						node = mapper.readTree(text);
 						type = node.findPath("type").asText();
 					} catch (Exception e) {
 						Log.e(TAG, e.getMessage(), e);
 					}
 
 					if (!"pong".equals(type)) {
-						Log.i(TAG, "Slack RTM message : " + message);
+						Log.i(TAG, "Slack RTM message : " + text);
 					}
 
 					if (type != null) {
@@ -166,11 +152,7 @@ public class SlackRealTimeMessagingClient {
 				}
 
 				@Override
-				public void onPong(Buffer payload) {
-				}
-
-				@Override
-				public void onClose(int code, String reason) {
+				public void onClosed(WebSocket webSocket, int code, String reason) {
 					stop = true;
 					if (closeListeners != null && !closeListeners.isEmpty()) {
 						for (CloseListener listener : closeListeners) {
@@ -180,8 +162,12 @@ public class SlackRealTimeMessagingClient {
 				}
 
 				@Override
-				public void onFailure(IOException e, Response response) {
+				public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+					if (!(t instanceof Exception))
+						return;
+
 					stop = true;
+					Exception e = (Exception) t;
 					e.printStackTrace();
 					if (failureListeners != null && !failureListeners.isEmpty()) {
 						for (FailureListener listener : failureListeners) {
@@ -210,10 +196,10 @@ public class SlackRealTimeMessagingClient {
 		String pingJson = pingMessage.toString();
 		if (ws != null) {
 			try {
-				ws.sendMessage(RequestBody.create(TEXT, pingJson));
+				ws.send(pingJson);
 				Log.d(TAG, "ping : " + pingJson);
-			} catch (IOException e) {
-				Log.d(TAG, "websocket closed before onclose event");
+			} catch (IllegalStateException e) {
+				Log.d(TAG, "websocket closed before we could write");
 				close();
 			}
 		}

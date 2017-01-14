@@ -25,7 +25,7 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
 public abstract class RestUtils {
 
-	private final static String TAG = "SlackClient";
+	private static final String TAG = "SlackClient";
 
 	public static HttpEntity createUrlEncodedFormEntity(Map<String, String> parameters) {
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>(parameters.size());
